@@ -1,12 +1,8 @@
-#include <glib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include "shared.h"
+#include "envs.h"
 
 int main(int argc, char* argv[]) {
-  /* gchar* envs_path = get_envs_path(); */
-  /* g_printf("%s", envs_path); */
-  /* g_free(envs_path); */
-  get_envs();
+  GHashTable* envs;
+  envs = get_eternal_envs();
+  print_hash_table(envs);
   return 0;
 }

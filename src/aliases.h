@@ -1,0 +1,4 @@
+#ifndef ETERNAL_UTILS_ALIASES_H
+#define ETERNAL_UTILS_ALIASES_H
+
+#endif
