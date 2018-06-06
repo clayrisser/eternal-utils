@@ -1,6 +1,10 @@
 #include <stdio.h>
+#include <glib.h>
+#include "shared.h"
 
 int main(int argc, char* argv[]) {
-  printf("eternal export\n");
+  gchar* envs_path = get_envs_path();
+  g_printf("%s", envs_path);
+  g_free(envs_path);
   return 0;
 }
