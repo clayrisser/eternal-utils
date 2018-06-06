@@ -2,7 +2,20 @@
 #include <glib.h>
 #include "shared.h"
 
-gchar* gen_key(GHashTable* envs, gchar* key) {
+gchar* trim(gchar* value) {
+  int trim = 0;
+  if (value[0] == '"' && value[strlen(value)-1] == '"' && value[strlen(value)-2] != "\\\"") {
+    trim = 1;
+  } else if (value[0] == '\'' && value[strlen(value)-1] == '\'' && value[strlen(value)-2] != "\\\"") {
+    trim = 1;
+  }
+  if (trim) {
+    g_utf8_strncpy(value, value+1, strlen(value)-2);
+  }
+  return value;
+}
+
+gchar* encode_key(GHashTable* envs, gchar* key) {
   if (g_hash_table_lookup(envs, key) != NULL) {
     GList* matches;
     gint count;
@@ -20,10 +33,21 @@ gchar* gen_key(GHashTable* envs, gchar* key) {
       } else {
         body = key;
       }
-      key = g_strconcat(body, "-", g_strdup_printf("%i", count));
-      key = gen_key(envs, key);
+      key = g_strconcat(body, "-", g_strdup_printf("%i", count), NULL);
+      key = encode_key(envs, key);
     }
+    g_list_free(matches);
   }
+  return key;
+}
+
+gchar* decode_key(gchar* key) {
+  GList* matches;
+  matches = regex("[0-9a-zA-Z_]+", key, 0);
+  if (g_list_length(matches) >= 1) {
+    return g_list_first(matches)->data;
+  }
+  g_list_free(matches);
   return key;
 }
 
@@ -41,14 +65,32 @@ GHashTable* get_envs_from_content(char* content) {
         gchar* key;
         gchar* value;
         key = g_list_nth(matches, 3)->data;
-        key = gen_key(envs, key);
-        value = g_list_nth(matches, 4)->data;
+        key = encode_key(envs, key);
+        value = trim(g_list_nth(matches, 4)->data);
         g_hash_table_insert(envs, key, value);
       }
     }
+    g_list_free(matches);
     line = strtok(NULL, "\n");
   }
   return envs;
+}
+
+gchar* get_content_from_envs(GHashTable* envs) {
+  gchar* content;
+  content = "#!/bin/bash\n\n";
+  GList* keys = g_hash_table_get_keys(envs);
+  GList* l;
+  for (l = keys; l != NULL; l = l->next) {
+    gchar* key;
+    gchar* value;
+    key = decode_key(l->data);
+    value = g_hash_table_lookup(envs, key);
+    content = g_strconcat(content, "export ", key, "=\"", value, "\"\n", NULL);
+  }
+  g_list_free(l);
+  g_list_free(keys);
+  return content;
 }
 
 gchar* get_envs_path() {
@@ -58,7 +100,6 @@ gchar* get_envs_path() {
   shell = get_shell();
   envs_filename = g_strconcat(".", shell, "_envs", NULL);
   envs_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), envs_filename, NULL);
-  g_free(shell);
   return envs_path;
 }
 

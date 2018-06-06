@@ -36,6 +36,7 @@ GList* regex(gchar* regex, gchar* string, gint options) {
       matches = g_list_append(matches, match);
     }
   }
+  pcre_free(re);
   return matches;
 }
 
@@ -54,27 +55,15 @@ gchar* get_shell() {
     }
     g_list_free(matches);
   }
-  gchar* result = malloc(strlen(shell) + 1);
-  strcpy(result, shell);
-  return result;
+  return shell;
 }
 
 gchar* read_file(gchar* path) {
   gchar* content;
-  GError* err;
-  g_file_get_contents(path, &content, NULL, &err);
-  if (err != NULL) {
-    if (err->code == G_FILE_ERROR_NOENT) {
-      content = "\n";
-    } else {
-      g_printf("code: %i\n", err->code);
-      fprintf(stderr, err->message);
-    }
-    g_error_free(err);
+  if (!g_file_get_contents(path, &content, NULL, NULL)) {
+    content = "\n";
   }
-  gchar* result = malloc(strlen(content) + 1);
-  strcpy(result, content);
-  return result;
+  return content;
 }
 
 void print_hash_table(GHashTable* map) {
@@ -87,4 +76,6 @@ void print_hash_table(GHashTable* map) {
     value = g_hash_table_lookup(map, key);
     g_printf("%s: %s\n", key, value);
   }
+  g_list_free(l);
+  g_list_free(keys);
 }

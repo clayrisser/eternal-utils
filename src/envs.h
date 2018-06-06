@@ -4,5 +4,6 @@
 #include <glib.h>
 
 GHashTable* get_eternal_envs();
+gchar* get_content_from_envs(GHashTable*);
 
 #endif

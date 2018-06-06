@@ -3,9 +3,9 @@
 
 #include <glib.h>
 
-GList* regex(gchar* regex, gchar* string, gint options);
+GList* regex(gchar*, gchar*, gint);
 gchar* get_shell();
-void print_hash_table(GHashTable* map);
-gchar* read_file(gchar* path);
+void print_hash_table(GHashTable*);
+gchar* read_file(gchar*);
 
 #endif
