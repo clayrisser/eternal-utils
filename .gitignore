@@ -1,0 +1,16 @@
+*.in
+*.log
+*.o
+*.cache
+/aclocal.m4
+/bin
+/compile
+/config.status
+/configure
+/dist
+/install-sh
+/missing
+/src/.deps
+/src/Makefile
+/depcomp
+/eternal-utils
