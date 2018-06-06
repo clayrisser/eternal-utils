@@ -2,24 +2,23 @@
 #include <pcre.h>
 #include <stdio.h>
 
-gchar* find_all(gchar* regex, gchar* string) {
-  const int MATCHES_COUNT = 3;
-  gchar* error;
-  gchar* match;
-  int matches[MATCHES_COUNT];
-  int errorOffset;
-  int rc;
+GList* regex(gchar* regex, gchar* string, gint options) {
+  const gchar* errMessage;
+  const gint OVECCOUNT = 30;
+  GList* matches = NULL;
+  gint errOffset;
+  gint ovector[OVECCOUNT];
+  gint matches_count;
   pcre* re;
-  re = pcre_compile(regex, PCRE_MULTILINE, &error, &errorOffset, 0);
+  re = pcre_compile(regex, options, &errMessage, &errOffset, 0);
   if (!re) {
-    fprintf(stderr, "failed to compile regex: %s\n", error);
+    fprintf(stderr, "%s", errMessage);
     exit(1);
   }
-  rc = pcre_exec(re, NULL, string, strlen(string), 0, 0, matches, MATCHES_COUNT);
-  if (rc < 0) {
-    switch(rc) {
+  matches_count = pcre_exec(re, NULL, string, strlen(string), 0, 0, ovector, OVECCOUNT);
+  if (matches_count < 0) {
+    switch(matches_count) {
     case PCRE_ERROR_NOMATCH:
-      match = "";
       break;
     default:
       fprintf(stderr, "regex match failed");
@@ -27,12 +26,17 @@ gchar* find_all(gchar* regex, gchar* string) {
       break;
     }
   } else {
-    match = string+matches[0];
+    for (int i = 0; i < matches_count; i++) {
+      char *start;
+      gchar* match;
+      int length;
+      start = string + ovector[2*i];
+      length = ovector[2*i+1] - ovector[2*i];
+      match = g_strndup(start, length);
+      matches = g_list_append(matches, match);
+    }
   }
-  gchar* result = malloc(strlen(match) + 1);
-  strcpy(result, match);
-  pcre_free(re);
-  return result;
+  return matches;
 }
 
 gchar* get_shell() {
@@ -41,13 +45,14 @@ gchar* get_shell() {
   if (!shell) {
     shell = "bash";
   } else {
-    gchar* match = find_all("[^\/]+$", shell);
-    if (strlen(shell) <= 0) {
+    GList* matches;
+    matches = regex("[^\/]+$", shell, PCRE_MULTILINE);
+    if (matches == NULL) {
       shell = "bash";
     } else {
-      strcpy(shell, match);
+      strcpy(shell, g_list_first(matches)->data);
     }
-    g_free(match);
+    g_list_free(matches);
   }
   gchar* result = malloc(strlen(shell) + 1);
   strcpy(result, shell);
@@ -74,4 +79,96 @@ gchar* get_aliases_path() {
   aliases_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), aliases_filename, NULL);
   g_free(shell);
   return aliases_path;
+}
+
+gchar* read_file(gchar* path) {
+  gchar* content;
+  GError* err;
+  g_file_get_contents(path, &content, NULL, &err);
+  if (err != NULL) {
+    if (err->code == G_FILE_ERROR_NOENT) {
+      content = "\n";
+    } else {
+      g_printf("code: %i\n", err->code);
+      fprintf(stderr, err->message);
+    }
+    g_error_free(err);
+  }
+  gchar* result = malloc(strlen(content) + 1);
+  strcpy(result, content);
+  return result;
+}
+
+gchar* gen_key(GHashTable* envs, gchar* key) {
+  if (g_hash_table_lookup(envs, key) != NULL) {
+    GList* matches;
+    gint count;
+    count = 0;
+    matches = regex("([0-9a-zA-Z_]+)(-[0-9]+)?", key, 0);
+    if (g_list_length(matches) >= 2) {
+      gchar* body;
+      gchar* tail;
+      if (g_list_length(matches) >= 3) {
+        body = g_list_nth(matches, 1)->data;
+        tail = g_list_nth(matches, 2)->data;
+        if (strlen(tail) > 0) {
+          count = atoi(tail + 1) + 1;
+        }
+      } else {
+        body = key;
+      }
+      key = g_strconcat(body, "-", g_strdup_printf("%i", count));
+      key = gen_key(envs, key);
+    }
+  }
+  return key;
+}
+
+GHashTable* get_envs_from_content(char* content) {
+  GHashTable* envs;
+  envs = g_hash_table_new(g_str_hash, g_str_equal);
+  char* line;
+  line = strtok(content, "\n");
+  while(line) {
+    GList* matches;
+    matches = regex("([ \t]*#[ \t]*)?(export[ \t]+)?([0-9a-zA-Z_]+)[ \t]*=[ \t]*([^\n]*)",
+                    line, PCRE_MULTILINE||PCRE_EXTENDED);
+    if (g_list_length(matches) >= 5) {
+      if (strlen(g_list_nth(matches, 1)->data) <= 0) {
+        gchar* key;
+        gchar* value;
+        key = g_list_nth(matches, 3)->data;
+        key = gen_key(envs, key);
+        value = g_list_nth(matches, 4)->data;
+        g_hash_table_insert(envs, key, value);
+      }
+    }
+    line = strtok(NULL, "\n");
+  }
+  return envs;
+}
+
+void get_envs() {
+  gchar* content;
+  gchar* envs_path;
+  GHashTable* envs;
+  envs_path = get_envs_path();
+  content = read_file(envs_path);
+  envs = get_envs_from_content(content);
+  print_hash_table(envs);
+  g_free(envs_path);
+  g_free(content);
+  return envs;
+}
+
+void print_hash_table(GHashTable* map) {
+  GList* keys = g_hash_table_get_keys(map);
+  GList* l;
+  for (l = keys; l != NULL; l = l->next) {
+    gchar* key;
+    gchar* value;
+    key = l->data;
+    value = g_hash_table_lookup(map, key);
+    g_printf("%s: %s\n", key, value);
+  }
 }

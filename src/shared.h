@@ -3,5 +3,6 @@
 
 gchar* get_envs_path();
 gchar* get_aliases_path();
+void get_envs();
 
 #endif
