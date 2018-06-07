@@ -2,6 +2,20 @@
 #include <glib.h>
 #include "shared.h"
 
+gboolean envs_sourced() {
+  gboolean sourced;
+  gchar* shell;
+  shell = get_shell();
+  sourced = FALSE;
+  if (is_sourced(g_strconcat("[$]HOME\/\.", shell, "_envs", NULL))) {
+    sourced = TRUE;
+  }
+  if (is_sourced(g_strconcat("~\/\.", shell, "_envs", NULL))) {
+    sourced = TRUE;
+  }
+  return sourced;
+}
+
 gchar* encode_key(GHashTable* envs, gchar* key) {
   if (g_hash_table_lookup(envs, key) != NULL) {
     GList* matches;
@@ -83,10 +97,11 @@ gchar* get_envs_path() {
   gchar* envs_filename;
   gchar* envs_path;
   gchar* shell;
+  gchar* simlink_path;
   shell = get_shell();
   envs_filename = g_strconcat(".", shell, "_envs", NULL);
   envs_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), envs_filename, NULL);
-  gchar* simlink_path = g_file_read_link(envs_path, NULL);
+  simlink_path = g_file_read_link(envs_path, NULL);
   if (simlink_path) {
     envs_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), simlink_path, NULL);
   }
@@ -146,6 +161,11 @@ GHashTable* get_eternal_envs() {
   GHashTable* envs;
   gchar* content;
   gchar* envs_path;
+  if (!envs_sourced()) {
+    printf("sourcing env");
+  } else {
+    printf("found");
+  }
   envs_path = get_envs_path();
   content = read_file(envs_path);
   envs = get_envs_from_content(content);

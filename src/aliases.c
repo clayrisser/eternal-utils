@@ -2,6 +2,20 @@
 #include <glib.h>
 #include "shared.h"
 
+gboolean aliases_sourced() {
+  gboolean sourced;
+  gchar* shell;
+  shell = get_shell();
+  sourced = FALSE;
+  if (is_sourced(g_strconcat("[$]HOME\/\.", shell, "_aliases", NULL))) {
+    sourced = TRUE;
+  }
+  if (is_sourced(g_strconcat("~\/\.", shell, "_aliases", NULL))) {
+    sourced = TRUE;
+  }
+  return sourced;
+}
+
 GHashTable* get_aliases_from_content(char* content) {
   GHashTable* aliases;
   aliases = g_hash_table_new(g_str_hash, g_str_equal);
@@ -47,10 +61,11 @@ gchar* get_aliases_path() {
   gchar* aliases_filename;
   gchar* aliases_path;
   gchar* shell;
+  gchar* simlink_path;
   shell = get_shell();
   aliases_filename = g_strconcat(".", shell, "_aliases", NULL);
   aliases_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), aliases_filename, NULL);
-  gchar* simlink_path = g_file_read_link(aliases_path, NULL);
+  simlink_path = g_file_read_link(aliases_path, NULL);
   if (simlink_path) {
     aliases_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), simlink_path, NULL);
   }
@@ -110,6 +125,9 @@ GHashTable* get_eternal_aliases() {
   GHashTable* aliases;
   gchar* content;
   gchar* aliases_path;
+  if (!aliases_sourced()) {
+    printf("sourcing aliases");
+  }
   aliases_path = get_aliases_path();
   content = read_file(aliases_path);
   aliases = get_aliases_from_content(content);
