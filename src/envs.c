@@ -97,7 +97,9 @@ GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
     gchar* key;
     gchar* token;
     gchar* value;
-    token = strtok(argv[i], delim);
+    gchar* arg = g_malloc(strlen(argv[i])+1);
+    strcpy(arg, argv[i]);
+    token = strtok(arg, delim);
     value = "";
     for(int i = 0; i < 2; i++) {
       if (token != NULL) {
@@ -113,9 +115,10 @@ GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
         break;
       }
     }
+    g_free(arg);
     if (strlen(key) > 0) {
       g_hash_table_insert(envs, key, value);
-      command = g_strconcat(command, " ", argv[i], NULL);
+      command = g_strconcat(command, " ", key, " \"", value, "\"", NULL);
     }
   }
   int err = system(command);

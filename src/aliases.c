@@ -16,7 +16,6 @@ GHashTable* get_aliases_from_content(char* content) {
         gchar* key;
         gchar* value;
         key = g_list_nth(matches, 3)->data;
-        key = encode_key(aliases, key);
         value = trim(g_list_nth(matches, 4)->data);
         g_hash_table_insert(aliases, key, value);
       }
@@ -35,7 +34,7 @@ gchar* get_content_from_aliases(GHashTable* aliases) {
   for (l = keys; l != NULL; l = l->next) {
     gchar* key;
     gchar* value;
-    key = decode_key(l->data);
+    key = l->data;
     value = g_hash_table_lookup(aliases, key);
     content = g_strconcat(content, "alias ", key, "=\"", value, "\"\n", NULL);
   }
@@ -54,13 +53,53 @@ gchar* get_aliases_path() {
   return aliases_path;
 }
 
-GHashTable* get_eternal_aliases() {
+GHashTable* get_aliases_from_args(gint argc, gchar* argv[], GHashTable* aliases) {
+  gchar* command;
+  command = "alias";
+  for (int i = 1; i < argc; i++) {
+    const gchar delim[2] = "=";
+    gchar* key;
+    gchar* token;
+    gchar* value;
+    gchar* arg = malloc(strlen(argv[i])+1);
+    strcpy(arg, argv[i]);
+    token = strtok(arg, delim);
+    value = "";
+    for(int i = 0; i < 2; i++) {
+      if (token != NULL) {
+        if (i == 0) {
+          key = token;
+        } else if (i == 1) {
+          value = token;
+        } else {
+          break;
+        }
+        token = strtok(NULL, delim);
+      } else {
+        break;
+      }
+    }
+    if (strlen(key) > 0) {
+      g_hash_table_insert(aliases, key, value);
+      command = g_strconcat(command, " ", key, "=\"", value, "\"", NULL);
+    }
+  }
+  /* g_printf("\n%s\n", command); */
+  int err = system(command);
+  if (err) {
+    exit(1);
+  }
+  return aliases;
+}
+
+GHashTable* get_eternal_aliases(gint argc, gchar* argv[]) {
+  GHashTable* aliases;
   gchar* content;
   gchar* aliases_path;
-  GHashTable* aliases;
   aliases_path = get_aliases_path();
   content = read_file(aliases_path);
   aliases = get_aliases_from_content(content);
+  aliases = get_aliases_from_args(argc, argv, aliases);
   g_free(aliases_path);
   g_free(content);
   return aliases;

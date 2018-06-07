@@ -5,7 +5,7 @@ bin_PROGRAMS = $(top_builddir)/bin/eternal-alias \
 	$(top_builddir)/bin/eternal-export \
 	$(top_builddir)/bin/eternal-unalias \
 	$(top_builddir)/bin/eternal-unset
-__top_builddir__bin_eternal_alias_SOURCES = eternal-alias.c
+__top_builddir__bin_eternal_alias_SOURCES = shared.h shared.c aliases.h aliases.c eternal-alias.c
 __top_builddir__bin_eternal_export_SOURCES = shared.h shared.c envs.h envs.c eternal-export.c
 __top_builddir__bin_eternal_unalias_SOURCES = eternal-unalias.c
 __top_builddir__bin_eternal_unset_SOURCES = eternal-unset.c

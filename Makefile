@@ -8,7 +8,11 @@ all: clean build
 
 .PHONY: eternal-export
 eternal-export: make break
-	@dist/bin/eternal-export HELLO=WORLD chop=chop
+	@dist/bin/eternal-export HELLO=WORLD
+
+.PHONY: eternal-alias
+eternal-alias: make break
+	@dist/bin/eternal-alias hello="echo world"
 
 .PHONY: break
 break:
