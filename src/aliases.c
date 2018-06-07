@@ -53,6 +53,16 @@ gchar* get_aliases_path() {
   return aliases_path;
 }
 
+gboolean* write_aliases(GHashTable* aliases) {
+  gboolean result;
+  gchar* content;
+  gchar* aliases_path;
+  aliases_path = get_aliases_path();
+  content = get_content_from_aliases(aliases);
+  result = write_file(aliases_path, content);
+  return result;
+}
+
 GHashTable* get_aliases_from_args(gint argc, gchar* argv[], GHashTable* aliases) {
   gchar* command;
   command = "alias";

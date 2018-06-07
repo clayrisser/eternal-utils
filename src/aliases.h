@@ -4,6 +4,6 @@
 #include <glib.h>
 
 GHashTable* get_eternal_aliases(gint, gchar* argv[]);
-gchar* get_content_from_aliases(GHashTable*);
+gboolean* write_aliases(GHashTable*);
 
 #endif
