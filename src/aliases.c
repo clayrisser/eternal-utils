@@ -102,13 +102,19 @@ GHashTable* get_aliases_from_args(gint argc, gchar* argv[], GHashTable* aliases)
   return aliases;
 }
 
-GHashTable* get_eternal_aliases(gint argc, gchar* argv[]) {
+GHashTable* get_eternal_aliases() {
   GHashTable* aliases;
   gchar* content;
   gchar* aliases_path;
   aliases_path = get_aliases_path();
   content = read_file(aliases_path);
   aliases = get_aliases_from_content(content);
-  aliases = get_aliases_from_args(argc, argv, aliases);
+  return aliases;
+}
+
+GHashTable* unalias_eternal_aliases(gint argc, gchar* argv[], GHashTable* aliases) {
+  for (int i = 1; i < argc; i++) {
+    g_hash_table_remove(aliases, argv[i]);
+  }
   return aliases;
 }

@@ -16,7 +16,11 @@ eternal-alias: make break
 
 .PHONY: eternal-unset
 eternal-unset: make break
-	@dist/bin/eternal-unset HELLO PATH hi
+	@dist/bin/eternal-unset HELLO
+
+.PHONY: eternal-unalias
+eternal-unalias: make break
+	@dist/bin/eternal-unalias hello
 
 .PHONY: break
 break:
