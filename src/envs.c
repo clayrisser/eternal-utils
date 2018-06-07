@@ -2,19 +2,6 @@
 #include <glib.h>
 #include "shared.h"
 
-gchar* trim(gchar* value) {
-  int trim = 0;
-  if (value[0] == '"' && value[strlen(value)-1] == '"' && value[strlen(value)-2] != "\\\"") {
-    trim = 1;
-  } else if (value[0] == '\'' && value[strlen(value)-1] == '\'' && value[strlen(value)-2] != "\\\"") {
-    trim = 1;
-  }
-  if (trim) {
-    g_utf8_strncpy(value, value+1, strlen(value)-2);
-  }
-  return value;
-}
-
 gchar* encode_key(GHashTable* envs, gchar* key) {
   if (g_hash_table_lookup(envs, key) != NULL) {
     GList* matches;
@@ -42,19 +29,18 @@ gchar* encode_key(GHashTable* envs, gchar* key) {
 }
 
 gchar* decode_key(gchar* key) {
-  GList* matches;
-  matches = regex("[0-9a-zA-Z_]+", key, 0);
-  if (g_list_length(matches) >= 1) {
-    return g_list_first(matches)->data;
+  gchar* found;
+  found = strchr(key, '-');
+  if (found != NULL) {
+    g_utf8_strncpy(key, key, strlen(key)-strlen(found));
   }
-  g_list_free(matches);
   return key;
 }
 
 GHashTable* get_envs_from_content(char* content) {
   GHashTable* envs;
-  envs = g_hash_table_new(g_str_hash, g_str_equal);
   char* line;
+  envs = g_hash_table_new(g_str_hash, g_str_equal);
   line = strtok(content, "\n");
   while(line) {
     GList* matches;
@@ -103,13 +89,50 @@ gchar* get_envs_path() {
   return envs_path;
 }
 
-GHashTable* get_eternal_envs() {
+GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
+  gchar* command;
+  command = "export";
+  for (int i = 1; i < argc; i++) {
+    const gchar delim[2] = "=";
+    gchar* key;
+    gchar* token;
+    gchar* value;
+    token = strtok(argv[i], delim);
+    value = "";
+    for(int i = 0; i < 2; i++) {
+      if (token != NULL) {
+        if (i == 0) {
+          key = token;
+        } else if (i == 1) {
+          value = token;
+        } else {
+          break;
+        }
+        token = strtok(NULL, delim);
+      } else {
+        break;
+      }
+    }
+    if (strlen(key) > 0) {
+      g_hash_table_insert(envs, key, value);
+      command = g_strconcat(command, " ", argv[i], NULL);
+    }
+  }
+  int err = system(command);
+  if (err) {
+    exit(1);
+  }
+  return envs;
+}
+
+GHashTable* get_eternal_envs(gint argc, gchar* argv[]) {
+  GHashTable* envs;
   gchar* content;
   gchar* envs_path;
-  GHashTable* envs;
   envs_path = get_envs_path();
   content = read_file(envs_path);
   envs = get_envs_from_content(content);
+  envs = get_envs_from_args(argc, argv, envs);
   g_free(envs_path);
   g_free(content);
   return envs;

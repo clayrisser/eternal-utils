@@ -3,7 +3,7 @@
 
 #include <glib.h>
 
-GHashTable* get_eternal_envs();
+GHashTable* get_eternal_envs(gint, gchar* argv[]);
 gchar* get_content_from_envs(GHashTable*);
 
 #endif

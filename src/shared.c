@@ -79,3 +79,16 @@ void print_hash_table(GHashTable* map) {
   g_list_free(l);
   g_list_free(keys);
 }
+
+gchar* trim(gchar* value) {
+  int trim = 0;
+  if (value[0] == '"' && value[strlen(value)-1] == '"' && value[strlen(value)-2] != "\\\"") {
+    trim = 1;
+  } else if (value[0] == '\'' && value[strlen(value)-1] == '\'' && value[strlen(value)-2] != "\\\"") {
+    trim = 1;
+  }
+  if (trim) {
+    g_utf8_strncpy(value, value+1, strlen(value)-2);
+  }
+  return value;
+}

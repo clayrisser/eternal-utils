@@ -8,7 +8,7 @@ all: clean build
 
 .PHONY: eternal-export
 eternal-export: make break
-	@dist/bin/eternal-export
+	@dist/bin/eternal-export HELLO=WORLD chop=chop
 
 .PHONY: break
 break:

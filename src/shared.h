@@ -5,7 +5,8 @@
 
 GList* regex(gchar*, gchar*, gint);
 gchar* get_shell();
-void print_hash_table(GHashTable*);
 gchar* read_file(gchar*);
+gchar* trim(gchar*);
+void print_hash_table(GHashTable*);
 
 #endif
