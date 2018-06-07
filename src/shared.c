@@ -66,6 +66,14 @@ gchar* read_file(gchar* path) {
   return content;
 }
 
+gboolean write_file(gchar* path, gchar* content) {
+  if (!g_file_set_contents(path, content, strlen(content), NULL)) {
+    fprintf(stderr, "failed to write to %s", path);
+    exit(1);
+  }
+  return TRUE;
+}
+
 void print_hash_table(GHashTable* map) {
   GList* keys = g_hash_table_get_keys(map);
   GList* l;

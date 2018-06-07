@@ -81,10 +81,10 @@ GHashTable* get_aliases_from_args(gint argc, gchar* argv[], GHashTable* aliases)
     }
     if (strlen(key) > 0) {
       g_hash_table_insert(aliases, key, value);
-      command = g_strconcat(command, " ", key, "=\"", value, "\"", NULL);
     }
+    command = g_strconcat(command, " \"", argv[i], "\"", NULL);
   }
-  /* g_printf("\n%s\n", command); */
+  command = g_strconcat(command, " 1>/dev/null", NULL);
   int err = system(command);
   if (err) {
     exit(1);
@@ -100,7 +100,5 @@ GHashTable* get_eternal_aliases(gint argc, gchar* argv[]) {
   content = read_file(aliases_path);
   aliases = get_aliases_from_content(content);
   aliases = get_aliases_from_args(argc, argv, aliases);
-  g_free(aliases_path);
-  g_free(content);
   return aliases;
 }

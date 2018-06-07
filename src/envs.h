@@ -4,6 +4,6 @@
 #include <glib.h>
 
 GHashTable* get_eternal_envs(gint, gchar* argv[]);
-gchar* get_content_from_envs(GHashTable*);
+gboolean* write_envs(GHashTable*);
 
 #endif

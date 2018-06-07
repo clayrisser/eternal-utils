@@ -89,6 +89,16 @@ gchar* get_envs_path() {
   return envs_path;
 }
 
+gboolean* write_envs(GHashTable* envs) {
+  gboolean result;
+  gchar* content;
+  gchar* envs_path;
+  envs_path = get_envs_path();
+  content = get_content_from_envs(envs);
+  result = write_file(envs_path, content);
+  return result;
+}
+
 GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
   gchar* command;
   command = "export";
@@ -115,12 +125,12 @@ GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
         break;
       }
     }
-    g_free(arg);
     if (strlen(key) > 0) {
       g_hash_table_insert(envs, key, value);
-      command = g_strconcat(command, " ", key, " \"", value, "\"", NULL);
     }
+    command = g_strconcat(command, " \"", argv[i], "\"", NULL);
   }
+  command = g_strconcat(command, " 1>/dev/null", NULL);
   int err = system(command);
   if (err) {
     exit(1);
@@ -136,7 +146,5 @@ GHashTable* get_eternal_envs(gint argc, gchar* argv[]) {
   content = read_file(envs_path);
   envs = get_envs_from_content(content);
   envs = get_envs_from_args(argc, argv, envs);
-  g_free(envs_path);
-  g_free(content);
   return envs;
 }
