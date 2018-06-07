@@ -86,6 +86,10 @@ gchar* get_envs_path() {
   shell = get_shell();
   envs_filename = g_strconcat(".", shell, "_envs", NULL);
   envs_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), envs_filename, NULL);
+  gchar* simlink_path = g_file_read_link(envs_path, NULL);
+  if (simlink_path) {
+    envs_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), simlink_path, NULL);
+  }
   return envs_path;
 }
 
