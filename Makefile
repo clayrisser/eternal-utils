@@ -14,6 +14,10 @@ eternal-export: make break
 eternal-alias: make break
 	@dist/bin/eternal-alias hello="echo world"
 
+.PHONY: eternal-unset
+eternal-unset: make break
+	@dist/bin/eternal-unset HELLO PATH hi
+
 .PHONY: break
 break:
 	@echo --------

@@ -1,6 +1,10 @@
-#include <stdio.h>
+#include "envs.h"
 
 int main(int argc, char* argv[]) {
-  printf("eternal unset\n");
+  GHashTable* envs;
+  envs = get_eternal_envs();
+  envs = unset_eternal_envs(argc, argv, envs);
+  write_envs(envs);
+  g_hash_table_destroy(envs);
   return 0;
 }

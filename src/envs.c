@@ -138,13 +138,29 @@ GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
   return envs;
 }
 
-GHashTable* get_eternal_envs(gint argc, gchar* argv[]) {
+GHashTable* get_eternal_envs() {
   GHashTable* envs;
   gchar* content;
   gchar* envs_path;
   envs_path = get_envs_path();
   content = read_file(envs_path);
   envs = get_envs_from_content(content);
-  envs = get_envs_from_args(argc, argv, envs);
+  return envs;
+}
+
+GHashTable* unset_eternal_envs(gint argc, gchar* argv[], GHashTable* envs) {
+  gchar* command;
+  command = "unset";
+  for (int i = 1; i < argc; i++) {
+    if (g_strcmp0(g_utf8_strup(argv[i], -1), "PATH")) {
+      g_hash_table_remove(envs, argv[i]);
+    }
+    command = g_strconcat(command, " ", argv[i], NULL);
+  }
+  command = g_strconcat(command, " 1>/dev/null", NULL);
+  int err = system(command);
+  if (err) {
+    exit(1);
+  }
   return envs;
 }
