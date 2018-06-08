@@ -1,4 +1,5 @@
 #include <glib.h>
+#include "glib-extras.h"
 #include "shared.h"
 
 gboolean envs_sourced() {
@@ -93,7 +94,6 @@ gchar* get_content_from_envs(GHashTable* envs) {
   GList* keys;
   content = "#!/bin/bash\n\n";
   keys = g_hash_table_get_keys(envs);
-  keys = sort_list(keys);
   GList* l;
   for (l = keys; l != NULL; l = l->next) {
     gchar* key;
@@ -114,7 +114,7 @@ gchar* get_envs_path() {
   gchar* simlink_path;
   shell = get_shell();
   envs_filename = g_strconcat(".", shell, "_envs", NULL);
-  envs_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), envs_filename, NULL);
+  envs_path = g_canonicalize_filename(envs_filename, g_get_home_dir());
   simlink_path = g_file_read_link(envs_path, NULL);
   if (simlink_path) {
     envs_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), simlink_path, NULL);

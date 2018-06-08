@@ -1,6 +1,7 @@
 #include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "glib-extras.h"
 
 gchar* get_shell() {
   GError* err;
@@ -79,7 +80,7 @@ gchar* get_shell_path() {
   gchar* simlink_path;
   shell = get_shell();
   shell_filename = g_strconcat(".", shell, "rc", NULL);
-  shell_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), shell_filename, NULL);
+  shell_path = g_canonicalize_filename(shell_filename, g_get_home_dir());
   simlink_path = g_file_read_link(shell_path, NULL);
   if (simlink_path) {
     shell_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), simlink_path, NULL);
@@ -148,7 +149,7 @@ GList* uniq(GList* list) {
 }
 
 gint sort_chars_compf(gconstpointer a, gconstpointer b) {
-  return strcmp((gchar*)a, (gchar*)b);
+  return g_strcmp0((gchar*)a, (gchar*)b);
 }
 
 GList* sort_list(GList* list) {
@@ -156,52 +157,52 @@ GList* sort_list(GList* list) {
   return list;
 }
 
-/* gchar* replace_env(gchar* env_key, gchar* string) { */
-/*   gchar* env; */
-/*   gchar* replaced; */
-/*   GRegex* regex; */
-/*   GRegexMatchFlags match_opts; */
-/*   regex = g_regex_new(g_strconcat("\$", env_key, NULL), 0, 0, NULL); */
-/*   env = g_getenv(env_key); */
-/*   if (!env) env = ""; */
-/*   replaced = g_regex_replace(regex, string, -1, 0, env, 0, NULL); */
-/*   return replaced; */
-/* } */
+gchar* replace_env(gchar* env_key, gchar* string) {
+  GError* err;
+  GRegex* regex;
+  gchar* env_value;
+  gchar* regex_str;
+  err = NULL;
+  env_value = g_getenv(env_key);
+  if (!env_value) {
+    env_value = "";
+  }
+  regex_str = g_strconcat("[$]", env_key, NULL);
+  regex = g_regex_new(regex_str, 0, 0, &err);
+  string = g_regex_replace(regex, string, -1, 0, env_value, 0, &err);
+  g_regex_unref(regex);
+  return string;
+}
 
 gchar* replace_envs(gchar* string) {
-  /* GList* matches; */
-  /* matches = regex("[$][A-Za-z0-9]+", string, PCRE_MULTILINE); */
-  /* if (g_list_length(matches) >= 1) { */
-  /*   g_printf("m %s\n", g_list_first(matches)->data); */
-  /* } */
-
-
-  /* gchar* replaced; */
-  /* GRegex *regex; */
-  /* GList* matches; */
-  /* GMatchInfo** match_info; */
-  /* replaced = string; */
-  /* regex = g_regex_new("[$]", 0, 0, NULL); */
-  /* g_regex_match_all_full(regex, string, -1, 0, 0, &match_info, NULL); */
-
-  /* matches = NULL; */
-  /* while (g_match_info_matches(match_info)) { */
-  /*   g_match_info_next(match_info, NULL); */
-  /*   g_printf("a"); */
-  /* } */
-
-  /* while (g_match_info_matches(match_info)) { */
-  /*   gchar* result = g_match_info_fetch(match_info, 0); */
-  /*   g_printf("m %s\n", result+1); */
-  /*   /\* replaced = replace_env(result+1, replaced); *\/ */
-  /*   g_match_info_next(match_info, NULL); */
-  /*   g_free(result); */
-  /* } */
-  return "";
+  GError* err;
+  GMatchInfo* match_info;
+  GRegex* regex;
+  gchar* regex_str;
+  err = NULL;
+  regex_str = "[$][1-9a-zA-Z]+";
+  regex = g_regex_new(regex_str, 0, 0, &err);
+  g_regex_match(regex, string, 0, &match_info);
+  while (g_match_info_matches(match_info)) {
+    gchar* env_key;
+    gchar* match;
+    match = g_match_info_fetch(match_info, 0);
+    if (strlen(match) > 0) {
+      env_key = match+1;
+      string = replace_env(env_key, string);
+      g_match_info_next(match_info, NULL);
+    }
+  }
+  g_match_info_unref(match_info);
+  g_regex_unref(regex);
+  return string;
 }
 
 gchar* expand_path(gchar* path) {
-  g_printf(":: %s\n", replace_envs("a $HOME is $good"));
-  gchar* expanded_path = "hi";
-  return expanded_path;
+  path = replace_envs(path);
+  if (path[0] == '~') {
+    path = path+2;
+  }
+  path = g_canonicalize_filename(path, g_get_home_dir());
+  return path;
 }

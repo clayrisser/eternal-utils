@@ -1,4 +1,5 @@
 #include <glib.h>
+#include "glib-extras.h"
 #include "shared.h"
 
 gboolean aliases_sourced() {
@@ -74,7 +75,7 @@ gchar* get_aliases_path() {
   gchar* simlink_path;
   shell = get_shell();
   aliases_filename = g_strconcat(".", shell, "_aliases", NULL);
-  aliases_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), aliases_filename, NULL);
+  aliases_path = g_canonicalize_filename(aliases_filename, g_get_home_dir());
   simlink_path = g_file_read_link(aliases_path, NULL);
   if (simlink_path) {
     aliases_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), simlink_path, NULL);

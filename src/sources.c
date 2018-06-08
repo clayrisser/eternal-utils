@@ -1,5 +1,5 @@
-#include <pcre.h>
 #include <glib.h>
+#include "glib-extras.h"
 #include "shared.h"
 
 gboolean sources_sourced() {
@@ -53,8 +53,18 @@ gchar* get_content_from_sources(GList* sources) {
   GList* l;
   for (l = sources; l != NULL; l = l->next) {
     gchar* source;
+    gboolean duplicate = FALSE;
     source = l->data;
-    content = g_strconcat(content, "source ", "\"", source, "\"\n", NULL);
+    GList* l2;
+    for (l2 = l->next; l2 != NULL; l2 = l2->next) {
+      if (g_strcmp0(expand_path(source), expand_path(l2->data)) == 0) {
+        duplicate = TRUE;
+      }
+    }
+    g_list_free(l2);
+    if (!duplicate) {
+      content = g_strconcat(content, "source ", "\"", source, "\"\n", NULL);
+    }
   }
   g_list_free(l);
   return content;
@@ -67,7 +77,7 @@ gchar* get_sources_path() {
   gchar* simlink_path;
   shell = get_shell();
   sources_filename = g_strconcat(".", shell, "_sources", NULL);
-  sources_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), sources_filename, NULL);
+  sources_path = g_canonicalize_filename(sources_filename, g_get_home_dir());
   simlink_path = g_file_read_link(sources_path, NULL);
   if (simlink_path) {
     sources_path = g_build_path(G_DIR_SEPARATOR_S, g_get_home_dir(), simlink_path, NULL);
@@ -114,13 +124,14 @@ GList* get_eternal_sources() {
 GList* unsource_eternal_sources(gint argc, gchar* argv[], GList* sources) {
   for (gint i = 1; i < argc; i++) {
     gchar* arg;
-    arg = expand_path(argv[i]);
+    arg = argv[i];
     GList* l;
     for (l = sources; l != NULL; l = l->next) {
       gchar* source;
-      source = expand_path(l->data);
-      g_printf("=> %s\n", arg);
-      g_printf("-> %s\n", source);
+      source = l->data;
+      if (g_strcmp0(expand_path(arg), expand_path(source)) == 0) {
+        sources = g_list_remove_all(sources, source);
+      }
     }
     g_list_free(l);
   }

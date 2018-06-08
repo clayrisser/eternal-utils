@@ -28,7 +28,7 @@ eternal-unset: make break
 
 .PHONY: eternal-unsource
 eternal-unsource: make break
-	@dist/bin/eternal-unsource ~/.bashrc
+	@dist/bin/eternal-unsource ~/.zsh_envs
 
 .PHONY: break
 break:
