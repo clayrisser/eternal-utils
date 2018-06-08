@@ -24,8 +24,8 @@ Please ★ this repo if you found it useful ★ ★ ★
 ```sh
 brew install glib make
 curl -LO \
-  https://github.com/codejamninja/eternal-utils/releases/download/0.1.0/eternal-utils_0.1.0.tar.gz
-tar -xzvf eternal-utils_0.1.0.tar.gz
+  https://github.com/codejamninja/eternal-utils/releases/download/0.2.0/eternal-utils_0.2.0.tar.gz
+tar -xzvf eternal-utils_0.2.0.tar.gz
 cd eternal-utils
 ./configure
 make
@@ -37,8 +37,8 @@ sudo make install
 ```sh
 sudo apt-get install -y libglib2.0-dev build-essential make
 curl -LO \
-  https://github.com/codejamninja/eternal-utils/releases/download/0.1.0/eternal-utils_0.1.0.tar.gz
-tar -xzvf eternal-utils_0.1.0.tar.gz
+  https://github.com/codejamninja/eternal-utils/releases/download/0.2.0/eternal-utils_0.2.0.tar.gz
+tar -xzvf eternal-utils_0.2.0.tar.gz
 cd eternal-utils
 ./configure
 make
