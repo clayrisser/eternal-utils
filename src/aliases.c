@@ -23,7 +23,7 @@ GHashTable* get_aliases_from_content(char* content) {
   line = strtok(content, "\n");
   while(line) {
     GList* matches;
-    matches = regex("([ \t]*#[ \t]*)?(alias[ \t]+)?([0-9a-zA-Z_]+)[ \t]*=[ \t]*([^\n]*)",
+    matches = regex("([ \t]*#[ \t]*)?(alias[ \t]+)([0-9a-zA-Z_]+)[ \t]*=[ \t]*([^\n]*)",
                     line, PCRE_MULTILINE||PCRE_EXTENDED);
     if (g_list_length(matches) >= 5) {
       if (strlen(g_list_nth(matches, 1)->data) <= 0) {

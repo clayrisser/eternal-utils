@@ -22,6 +22,10 @@ eternal-unset: make break
 eternal-unalias: make break
 	@dist/bin/eternal-unalias hello
 
+.PHONY: eternal-source
+eternal-source: make break
+	@dist/bin/eternal-source ~/.bashrc
+
 .PHONY: break
 break:
 	@echo --------

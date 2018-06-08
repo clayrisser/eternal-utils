@@ -97,6 +97,16 @@ void print_hash_table(GHashTable* map) {
   g_list_free(keys);
 }
 
+void print_list(GList* list) {
+  GList* l;
+  for (l = list; l != NULL; l = l->next) {
+    gchar* item;
+    item = l->data;
+    g_printf("-> %s\n", item);
+  }
+  g_list_free(l);
+}
+
 gchar* get_shell_path() {
   gchar* shell;
   gchar* shell_filename;
@@ -150,4 +160,22 @@ gboolean is_sourced(gchar* file_regex) {
     line = strtok(NULL, "\n");
   }
   return sourced;
+}
+
+GList* uniq(GList *list) {
+  GList *l, *item;
+  GHashTable *table;
+  table = g_hash_table_new(g_str_hash, g_str_equal);
+  for (l = list; l;) {
+    item = l;
+    l = l->next;
+    if (g_hash_table_contains(table, item->data)) {
+      list = g_list_delete_link(list, item);
+    } else {
+      g_hash_table_add(table, item->data);
+    }
+  }
+  g_list_free(l);
+  g_hash_table_destroy(table);
+  return list;
 }
