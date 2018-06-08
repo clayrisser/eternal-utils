@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([eternal-utils], [0.0.1], [jam@codejam.ninja])
+AC_INIT([eternal-utils], [0.1.0], [jam@codejam.ninja])
 AM_INIT_AUTOMAKE
 AC_PROG_CC
 PKG_CHECK_MODULES([GLOB], [glib-2.0 >= 2.24.1, libpcre])
