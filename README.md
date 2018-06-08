@@ -72,6 +72,18 @@ eternal-alias hello="echo world"
 eternal-unalias hello
 ```
 
+### Eternal source
+
+```sh
+eternal-source ~/.hello.sh
+```
+
+### Eternal unsource
+
+```sh
+eternal-unsource ~/.hello.sh
+```
+
 
 ## Support
 
