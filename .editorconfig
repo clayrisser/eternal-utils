@@ -11,6 +11,6 @@ trim_trailing_whitespace = true
 charset = utf-8
 trim_trailing_whitespace = false
 
-[{m,M}akefile]
+[{m,M}akefile*]
 charset = utf-8
 indent_style = tab

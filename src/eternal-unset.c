@@ -1,6 +1,6 @@
 #include "envs.h"
 
-int main(int argc, char* argv[]) {
+gint main(gint argc, gchar** argv) {
   GHashTable* envs;
   envs = get_eternal_envs();
   envs = unset_eternal_envs(argc, argv, envs);

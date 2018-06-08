@@ -3,11 +3,12 @@
 
 #include <glib.h>
 
-GList* regex(gchar*, gchar*, gint);
+GList* sort_list(GList*);
 GList* uniq(GList*);
 gboolean append_file(gchar*, gchar*);
 gboolean is_sourced(gchar*);
 gboolean write_file(gchar*, gchar*);
+gchar* expand_path(gchar*);
 gchar* get_shell();
 gchar* get_shell_path();
 gchar* read_file(gchar*);

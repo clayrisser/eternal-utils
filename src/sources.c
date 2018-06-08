@@ -18,21 +18,30 @@ gboolean sources_sourced() {
 
 GList* get_sources_from_content(gchar* content) {
   GList* sources;
-  char* line;
+  GError* err;
+  gchar* line;
   sources = NULL;
+  err = NULL;
   line = strtok(content, "\n");
-  while(line) {
-    GList* matches;
-    matches = regex("([ \t]*#[ \t]*)?(source[ \t]+)([^\n]+)",
-                    line, PCRE_MULTILINE||PCRE_EXTENDED);
-    if (g_list_length(matches) >= 4) {
-      if (strlen(g_list_nth(matches, 1)->data) <= 0) {
+  while (line) {
+    GRegex* regex;
+    gchar* regex_str;
+    GMatchInfo* match_info;
+    regex_str = "([ \t]*#[ \t]*)?(source[ \t]+)([^\n]+)";
+    regex = g_regex_new(regex_str, 0, 0, &err);
+    g_regex_match(regex, line, 0, &match_info);
+    while (g_match_info_matches(match_info)) {
+      gchar** matches;
+      matches = g_match_info_fetch_all(match_info);
+      if (!matches[1] || strlen(matches[1]) <= 0) {
         gchar* source;
-        source = trim(g_list_nth(matches, 3)->data);
+        source = trim(matches[3]);
         sources = g_list_append(sources, source);
       }
+      g_match_info_next(match_info, NULL);
     }
-    g_list_free(matches);
+    g_match_info_unref(match_info);
+    g_regex_unref(regex);
     line = strtok(NULL, "\n");
   }
   return sources;
@@ -103,14 +112,17 @@ GList* get_eternal_sources() {
 }
 
 GList* unsource_eternal_sources(gint argc, gchar* argv[], GList* sources) {
-  gchar* command;
-  for (int i = 1; i < argc; i++) {
-    g_hash_table_remove(sources, argv[i]);
-  }
-  command = g_strconcat(command, " 1>/dev/null", NULL);
-  int err = system(command);
-  if (err) {
-    exit(1);
+  for (gint i = 1; i < argc; i++) {
+    gchar* arg;
+    arg = expand_path(argv[i]);
+    GList* l;
+    for (l = sources; l != NULL; l = l->next) {
+      gchar* source;
+      source = expand_path(l->data);
+      g_printf("=> %s\n", arg);
+      g_printf("-> %s\n", source);
+    }
+    g_list_free(l);
   }
   return sources;
 }

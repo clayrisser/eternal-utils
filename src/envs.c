@@ -1,4 +1,3 @@
-#include <pcre.h>
 #include <glib.h>
 #include "shared.h"
 
@@ -17,27 +16,32 @@ gboolean envs_sourced() {
 }
 
 gchar* encode_key(GHashTable* envs, gchar* key) {
+  GError* err;
+  err = NULL;
   if (g_hash_table_lookup(envs, key) != NULL) {
-    GList* matches;
+    GMatchInfo* match_info;
+    GRegex* regex;
+    gchar* body;
+    gchar* regex_str;
+    gchar* tail;
+    gchar** matches;
     gint count;
     count = 0;
-    matches = regex("([0-9a-zA-Z_]+)(-[0-9]+)?", key, 0);
-    if (g_list_length(matches) >= 2) {
-      gchar* body;
-      gchar* tail;
-      if (g_list_length(matches) >= 3) {
-        body = g_list_nth(matches, 1)->data;
-        tail = g_list_nth(matches, 2)->data;
-        if (strlen(tail) > 0) {
-          count = atoi(tail + 1) + 1;
-        }
-      } else {
-        body = key;
-      }
-      key = g_strconcat(body, "-", g_strdup_printf("%i", count), NULL);
-      key = encode_key(envs, key);
+    regex_str = "([0-9a-zA-Z_]+)(-[0-9]+)?";
+    regex = g_regex_new(regex_str, 0, 0, &err);
+    g_regex_match(regex, key, 0, &match_info);
+    matches = g_match_info_fetch_all(match_info);
+    body = matches[1];
+    tail = matches[2];
+    if (tail) {
+      count = atoi(tail+1) + 1;
+    } else {
+      body = key;
     }
-    g_list_free(matches);
+    key = g_strconcat(body, "-", g_strdup_printf("%i", count), NULL);
+    key = encode_key(envs, key);
+    g_match_info_unref(match_info);
+    g_regex_unref(regex);
   }
   return key;
 }
@@ -51,26 +55,34 @@ gchar* decode_key(gchar* key) {
   return key;
 }
 
-GHashTable* get_envs_from_content(char* content) {
+GHashTable* get_envs_from_content(gchar* content) {
+  GError* err;
   GHashTable* envs;
-  char* line;
+  gchar* line;
   envs = g_hash_table_new(g_str_hash, g_str_equal);
+  err = NULL;
   line = strtok(content, "\n");
-  while(line) {
-    GList* matches;
-    matches = regex("([ \t]*#[ \t]*)?(export[ \t]+)?([0-9a-zA-Z_]+)[ \t]*=[ \t]*([^\n]*)",
-                    line, PCRE_MULTILINE||PCRE_EXTENDED);
-    if (g_list_length(matches) >= 5) {
-      if (strlen(g_list_nth(matches, 1)->data) <= 0) {
+  while (line) {
+    GRegex* regex;
+    gchar* regex_str;
+    GMatchInfo* match_info;
+    regex_str = "([ \t]*\#[ \t]*)?(export[ \t]+)?([0-9a-zA-Z_]+)[ \t]*=[ \t]*([^\n]*)";
+    regex = g_regex_new(regex_str, 0, 0, &err);
+    g_regex_match(regex, line, 0, &match_info);
+    while (g_match_info_matches(match_info)) {
+      gchar** matches;
+      matches = g_match_info_fetch_all(match_info);
+      if (strlen(matches[1]) <= 0) {
         gchar* key;
         gchar* value;
-        key = g_list_nth(matches, 3)->data;
-        key = encode_key(envs, key);
-        value = trim(g_list_nth(matches, 4)->data);
+        key = encode_key(envs, matches[3]);
+        value = trim(matches[4]);
         g_hash_table_insert(envs, key, value);
       }
+      g_match_info_next(match_info, NULL);
     }
-    g_list_free(matches);
+    g_match_info_unref(match_info);
+    g_regex_unref(regex);
     line = strtok(NULL, "\n");
   }
   return envs;
@@ -78,8 +90,10 @@ GHashTable* get_envs_from_content(char* content) {
 
 gchar* get_content_from_envs(GHashTable* envs) {
   gchar* content;
+  GList* keys;
   content = "#!/bin/bash\n\n";
-  GList* keys = g_hash_table_get_keys(envs);
+  keys = g_hash_table_get_keys(envs);
+  keys = sort_list(keys);
   GList* l;
   for (l = keys; l != NULL; l = l->next) {
     gchar* key;
@@ -121,7 +135,7 @@ gboolean* write_envs(GHashTable* envs) {
 GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
   gchar* command;
   command = "export";
-  for (int i = 1; i < argc; i++) {
+  for (gint i = 1; i < argc; i++) {
     const gchar delim[2] = "=";
     gchar* key;
     gchar* token;
@@ -130,7 +144,7 @@ GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
     strcpy(arg, argv[i]);
     token = strtok(arg, delim);
     value = "";
-    for(int i = 0; i < 2; i++) {
+    for(gint i = 0; i < 2; i++) {
       if (token != NULL) {
         if (i == 0) {
           key = token;
@@ -150,7 +164,7 @@ GHashTable* get_envs_from_args(gint argc, gchar* argv[], GHashTable* envs) {
     command = g_strconcat(command, " \"", argv[i], "\"", NULL);
   }
   command = g_strconcat(command, " 1>/dev/null", NULL);
-  int err = system(command);
+  gint err = system(command);
   if (err) {
     exit(1);
   }
@@ -177,14 +191,14 @@ GHashTable* get_eternal_envs() {
 GHashTable* unset_eternal_envs(gint argc, gchar* argv[], GHashTable* envs) {
   gchar* command;
   command = "unset";
-  for (int i = 1; i < argc; i++) {
+  for (gint i = 1; i < argc; i++) {
     if (g_strcmp0(g_utf8_strup(argv[i], -1), "PATH")) {
       g_hash_table_remove(envs, argv[i]);
     }
     command = g_strconcat(command, " ", argv[i], NULL);
   }
   command = g_strconcat(command, " 1>/dev/null", NULL);
-  int err = system(command);
+  gint err = system(command);
   if (err) {
     exit(1);
   }

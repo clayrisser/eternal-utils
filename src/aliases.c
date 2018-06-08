@@ -1,4 +1,3 @@
-#include <pcre.h>
 #include <glib.h>
 #include "shared.h"
 
@@ -16,25 +15,34 @@ gboolean aliases_sourced() {
   return sourced;
 }
 
-GHashTable* get_aliases_from_content(char* content) {
+GHashTable* get_aliases_from_content(gchar* content) {
+  GError* err;
   GHashTable* aliases;
+  gchar* line;
   aliases = g_hash_table_new(g_str_hash, g_str_equal);
-  char* line;
+  err = NULL;
   line = strtok(content, "\n");
-  while(line) {
-    GList* matches;
-    matches = regex("([ \t]*#[ \t]*)?(alias[ \t]+)([0-9a-zA-Z_]+)[ \t]*=[ \t]*([^\n]*)",
-                    line, PCRE_MULTILINE||PCRE_EXTENDED);
-    if (g_list_length(matches) >= 5) {
-      if (strlen(g_list_nth(matches, 1)->data) <= 0) {
+  while (line) {
+    GRegex* regex;
+    gchar* regex_str;
+    GMatchInfo* match_info;
+    regex_str = "([ \t]*#[ \t]*)?(alias[ \t]+)([^ ]+)[ \t]*=[ \t]*([^\n]*)";
+    regex = g_regex_new(regex_str, 0, 0, &err);
+    g_regex_match(regex, line, 0, &match_info);
+    while (g_match_info_matches(match_info)) {
+      gchar** matches;
+      matches = g_match_info_fetch_all(match_info);
+      if (strlen(matches[1]) <= 0) {
         gchar* key;
         gchar* value;
-        key = g_list_nth(matches, 3)->data;
-        value = trim(g_list_nth(matches, 4)->data);
+        key = matches[3];
+        value = trim(matches[4]);
         g_hash_table_insert(aliases, key, value);
       }
+      g_match_info_next(match_info, NULL);
     }
-    g_list_free(matches);
+    g_match_info_unref(match_info);
+    g_regex_unref(regex);
     line = strtok(NULL, "\n");
   }
   return aliases;
@@ -42,8 +50,10 @@ GHashTable* get_aliases_from_content(char* content) {
 
 gchar* get_content_from_aliases(GHashTable* aliases) {
   gchar* content;
+  GList* keys;
   content = "#!/bin/bash\n\n";
-  GList* keys = g_hash_table_get_keys(aliases);
+  keys = g_hash_table_get_keys(aliases);
+  keys = sort_list(keys);
   GList* l;
   for (l = keys; l != NULL; l = l->next) {
     gchar* key;
@@ -85,7 +95,7 @@ gboolean* write_aliases(GHashTable* aliases) {
 GHashTable* get_aliases_from_args(gint argc, gchar* argv[], GHashTable* aliases) {
   gchar* command;
   command = "alias";
-  for (int i = 1; i < argc; i++) {
+  for (gint i = 1; i < argc; i++) {
     const gchar delim[2] = "=";
     gchar* key;
     gchar* token;
@@ -94,7 +104,7 @@ GHashTable* get_aliases_from_args(gint argc, gchar* argv[], GHashTable* aliases)
     strcpy(arg, argv[i]);
     token = strtok(arg, delim);
     value = "";
-    for(int i = 0; i < 2; i++) {
+    for(gint i = 0; i < 2; i++) {
       if (token != NULL) {
         if (i == 0) {
           key = token;
@@ -114,7 +124,7 @@ GHashTable* get_aliases_from_args(gint argc, gchar* argv[], GHashTable* aliases)
     command = g_strconcat(command, " \"", argv[i], "\"", NULL);
   }
   command = g_strconcat(command, " 1>/dev/null", NULL);
-  int err = system(command);
+  gint err = system(command);
   if (err) {
     exit(1);
   }
@@ -139,7 +149,7 @@ GHashTable* get_eternal_aliases() {
 }
 
 GHashTable* unalias_eternal_aliases(gint argc, gchar* argv[], GHashTable* aliases) {
-  for (int i = 1; i < argc; i++) {
+  for (gint i = 1; i < argc; i++) {
     g_hash_table_remove(aliases, argv[i]);
   }
   return aliases;

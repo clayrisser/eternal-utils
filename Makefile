@@ -6,25 +6,29 @@ VERSION := $(shell $(CMD))
 .PHONY: all
 all: clean build
 
-.PHONY: eternal-export
-eternal-export: make break
-	@dist/bin/eternal-export HELLO=WORLD
-
 .PHONY: eternal-alias
 eternal-alias: make break
 	@dist/bin/eternal-alias hello="echo world"
 
-.PHONY: eternal-unset
-eternal-unset: make break
-	@dist/bin/eternal-unset HELLO
+.PHONY: eternal-export
+eternal-export: make break
+	@dist/bin/eternal-export HELLO=WORLD
+
+.PHONY: eternal-source
+eternal-source: make break
+	@dist/bin/eternal-source ~/.bashrc
 
 .PHONY: eternal-unalias
 eternal-unalias: make break
 	@dist/bin/eternal-unalias hello
 
-.PHONY: eternal-source
-eternal-source: make break
-	@dist/bin/eternal-source ~/.bashrc
+.PHONY: eternal-unset
+eternal-unset: make break
+	@dist/bin/eternal-unset HELLO
+
+.PHONY: eternal-unsource
+eternal-unsource: make break
+	@dist/bin/eternal-unsource ~/.bashrc
 
 .PHONY: break
 break:

@@ -1,6 +1,6 @@
 #include "aliases.h"
 
-int main(int argc, char* argv[]) {
+gint main(gint argc, gchar* argv[]) {
   GHashTable* aliases;
   aliases = get_eternal_aliases();
   aliases = get_aliases_from_args(argc, argv, aliases);
