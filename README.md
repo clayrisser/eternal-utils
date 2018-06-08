@@ -22,8 +22,6 @@ Please ★ this repo if you found it useful ★ ★ ★
 ### Mac OS X
 
 ```sh
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
-brew install pcre
 brew install glib
 brew install make
 curl -LO https://github.com/codejamninja/eternal-utils/releases/download/0.1.0/eternal-utils_0.1.0.tar.gz
@@ -37,7 +35,7 @@ sudo make install
 ### Ubuntu Linux
 
 ```sh
-sudo apt-get install -y libpcre2-dev libglib2.0-dev build-essential make
+sudo apt-get install -y libglib2.0-dev build-essential make
 curl -LO https://github.com/codejamninja/eternal-utils/releases/download/0.1.0/eternal-utils_0.1.0.tar.gz
 tar -xzvf eternal-utils_0.1.0.tar.gz
 cd eternal-utils
