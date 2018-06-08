@@ -162,9 +162,11 @@ GHashTable* get_eternal_envs() {
   gchar* content;
   gchar* envs_path;
   if (!envs_sourced()) {
-    printf("sourcing env");
-  } else {
-    printf("found");
+    gchar* shell;
+    gchar* shell_path;
+    shell = get_shell();
+    shell_path = get_shell_path();
+    append_file(shell_path, g_strconcat("\nsource $HOME/.", shell, "_envs\n", NULL));
   }
   envs_path = get_envs_path();
   content = read_file(envs_path);

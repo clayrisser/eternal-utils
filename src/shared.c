@@ -1,6 +1,7 @@
 #include <glib.h>
 #include <pcre.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 GList* regex(gchar* regex, gchar* string, gint options) {
   const gchar* errMessage;
@@ -66,11 +67,19 @@ gchar* read_file(gchar* path) {
   return content;
 }
 
-gboolean write_file(gchar* path, gchar* content) {
+gboolean* write_file(gchar* path, gchar* content) {
   if (!g_file_set_contents(path, content, strlen(content), NULL)) {
     fprintf(stderr, "failed to write to %s", path);
     exit(1);
   }
+  return TRUE;
+}
+
+gboolean* append_file(gchar* path, gchar* content) {
+  FILE* f;
+  f = fopen(path, "a");
+  fprintf(f, "%s", content);
+  fclose(f);
   return TRUE;
 }
 
@@ -117,22 +126,28 @@ gchar* trim(gchar* value) {
 }
 
 gboolean is_sourced(gchar* file_regex) {
-  GList* matches;
+  char* line;
+  gboolean sourced;
   gchar* content;
   gchar* regex_str;
   gchar* shell_path;
-  gboolean sourced;
   sourced = FALSE;
   shell_path = get_shell_path();
   content = read_file(shell_path);
-  regex_str = g_strconcat("([ \t]*#[ \t]*)?(source[ \t]+", file_regex, ")", NULL);
-  matches = regex(regex_str, content, 0);
-  if (g_list_length(matches) >= 3) {
-    if (strlen(g_list_nth(matches, 1)->data) <= 0) {
-      if (strlen(g_list_nth(matches, 2)->data) > 0) {
-        sourced = TRUE;
+  regex_str = g_strconcat("([ \t]*#[ \t]*)?(source[ \t]+", file_regex, "[ \t\n]*)", NULL);
+  line = strtok(content, "\n");
+  while(line) {
+    GList* matches;
+    matches = regex(regex_str, line, 0);
+    if (g_list_length(matches) >= 3) {
+      if (strlen(g_list_nth(matches, 1)->data) <= 0) {
+        if (strlen(g_list_nth(matches, 2)->data) > 0) {
+          sourced = TRUE;
+        }
       }
     }
+    g_list_free(matches);
+    line = strtok(NULL, "\n");
   }
   return sourced;
 }

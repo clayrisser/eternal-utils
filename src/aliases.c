@@ -126,7 +126,11 @@ GHashTable* get_eternal_aliases() {
   gchar* content;
   gchar* aliases_path;
   if (!aliases_sourced()) {
-    printf("sourcing aliases");
+    gchar* shell;
+    gchar* shell_path;
+    shell = get_shell();
+    shell_path = get_shell_path();
+    append_file(shell_path, g_strconcat("\nsource $HOME/.", shell, "_aliases\n", NULL));
   }
   aliases_path = get_aliases_path();
   content = read_file(aliases_path);

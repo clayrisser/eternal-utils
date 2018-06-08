@@ -4,6 +4,7 @@
 #include <glib.h>
 
 GList* regex(gchar*, gchar*, gint);
+gboolean append_file(gchar*, gchar*);
 gboolean is_sourced(gchar*);
 gboolean write_file(gchar*, gchar*);
 gchar* get_shell();
