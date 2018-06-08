@@ -36,16 +36,24 @@ sudo make install
 
 ### Ubuntu Linux
 
-```sh
-sudo apt-get install -y libglib2.0-dev build-essential make
-curl -LO \
-  https://github.com/codejamninja/eternal-utils/releases/download/0.2.0/eternal-utils_0.2.0.tar.gz
-tar -xzvf eternal-utils_0.2.0.tar.gz
-cd eternal-utils
-./configure
-make
-sudo make install
-```
+#### APT package manager
+    ```sh
+    sudo add-apt-repository ppa:codejamninja/jam-os
+    sudo apt-get update
+    sudo apt-get install eternal-utils
+    ```
+
+### Compile from source
+    ```sh
+    sudo apt-get install -y libglib2.0-dev build-essential make
+    curl -LO \
+      https://github.com/codejamninja/eternal-utils/releases/download/0.2.0/eternal-utils_0.2.0.tar.gz
+    tar -xzvf eternal-utils_0.2.0.tar.gz
+    cd eternal-utils
+    ./configure
+    make
+    sudo make install
+    ```
 
 
 ## Usage
