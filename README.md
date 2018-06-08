@@ -9,10 +9,12 @@ Please ★ this repo if you found it useful ★ ★ ★
 
 ## Features
 
-* Persist environment varaibles eternally
+* Persist environment variables eternally
 * Persist aliases eternally
+* Persist sources eternally
 * Remove persisted environment variables
 * Remove persisted aliases
+* Remove persisted sources
 * Compatible with bash
 * Compatible with zsh
 
