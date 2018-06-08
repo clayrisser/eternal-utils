@@ -20,8 +20,8 @@ Please ★ this repo if you found it useful ★ ★ ★
 ## Installation
 
 ```sh
-curl -LO https://github.com/codejamninja/eternal-utils/releases/download/0.1.0/eternal-utils_0.0.1.tar.gz
-tar -xzvf eternal-utils_0.0.1.tar.gz
+curl -LO https://github.com/codejamninja/eternal-utils/releases/download/0.1.0/eternal-utils_0.1.0.tar.gz
+tar -xzvf eternal-utils_0.1.0.tar.gz
 cd eternal-utils
 ./configure
 make
