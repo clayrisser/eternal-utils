@@ -22,7 +22,7 @@ Please ★ this repo if you found it useful ★ ★ ★
 ## Installation
 
 ### Mac OS X
-
+#### Compile from source
 ```sh
 brew install glib make
 curl -LO \
