@@ -9,10 +9,12 @@ Please ★ this repo if you found it useful ★ ★ ★
 
 ## Features
 
-* Persist environment varaibles eternally
+* Persist environment variables eternally
 * Persist aliases eternally
+* Persist sources eternally
 * Remove persisted environment variables
 * Remove persisted aliases
+* Remove persisted sources
 * Compatible with bash
 * Compatible with zsh
 
@@ -20,7 +22,7 @@ Please ★ this repo if you found it useful ★ ★ ★
 ## Installation
 
 ### Mac OS X
-
+#### Compile from source
 ```sh
 brew install glib make
 curl -LO \
@@ -34,6 +36,14 @@ sudo make install
 
 ### Ubuntu Linux
 
+#### APT package manager
+```sh
+sudo add-apt-repository ppa:codejamninja/jam-os
+sudo apt-get update
+sudo apt-get install eternal-utils
+```
+
+#### Compile from source
 ```sh
 sudo apt-get install -y libglib2.0-dev build-essential make
 curl -LO \
