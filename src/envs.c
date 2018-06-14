@@ -98,9 +98,9 @@ gchar* get_content_from_envs(GHashTable* envs) {
   for (l = keys; l != NULL; l = l->next) {
     gchar* key;
     gchar* value;
-    key = decode_key(l->data);
+    key = l->data;
     value = g_hash_table_lookup(envs, key);
-    content = g_strconcat(content, "export ", key, "=\"", value, "\"\n", NULL);
+    content = g_strconcat(content, "export ", decode_key(key), "=\"", value, "\"\n", NULL);
   }
   g_list_free(l);
   g_list_free(keys);
