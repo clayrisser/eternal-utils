@@ -1,0 +1,27 @@
+Source: eternal-utils
+Section: utils
+Priority: optional
+Maintainer: Jam Risser <jam@codejam.ninja>
+Build-Depends: autotools-dev,
+               debhelper (>= 10),
+               libglib2.0-dev (>= 2.24.1)
+Standards-Version: 4.1.2
+Homepage: <https://github.com/codejamninja/eternal-utils>
+Vcs-Git: https://github.com/codejamninja/eternal-utils.git
+Vcs-Browser: https://github.com/codejamninja/eternal-utils.git
+
+Package: eternal-utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Eternally persist exported environment variables and aliases
+ Eternally persist exported environment variables and aliases
+ .
+ ## Features
+   * Persist environment variables eternally
+   * Persist aliases eternally
+   * Persist sources eternally
+   * Remove persisted environment variables
+   * Remove persisted aliases
+   * Remove persisted sources
+   * Compatible with bash
+   * Compatible with zsh

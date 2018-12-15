@@ -71,6 +71,10 @@ dist:
 .PHONY: build
 build: $(NAME)_$(VERSION).tar.gz
 
+.PHONY: publish
+publish:
+	@cd ubuntu && make publish
+
 $(NAME)_$(VERSION).tar.gz: dist
 	@mv dist $(NAME)
 	@tar -czvf $(NAME)_$(VERSION).tar.gz $(NAME)

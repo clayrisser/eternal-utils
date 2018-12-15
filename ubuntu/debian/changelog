@@ -1,0 +1,5 @@
+eternal-utils (0.2.0-1) bionic; urgency=medium
+
+  * Initial release for debian packaging
+
+ -- Jam Risser <jam@codejam.ninja>  Sat, 09 Jun 2018 06:53:15 +1200

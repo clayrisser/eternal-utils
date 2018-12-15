@@ -15,3 +15,8 @@
 /missing
 /src/.deps
 /src/Makefile
+/ubuntu/build
+/ubuntu/build*.tar.gz
+/ubuntu/message
+/ubuntu/eternal-utils*
+/ubuntu/build-area
